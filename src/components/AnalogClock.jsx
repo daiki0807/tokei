@@ -5,7 +5,7 @@ const handPoint = (cx, cy, angleDeg, length) => ({
   y: cy - length * Math.cos(toRad(angleDeg)),
 })
 
-export default function AnalogClock({ currentTime, baseTime, elapsedMinutes }) {
+export default function AnalogClock({ currentTime, baseTime, elapsedMinutes, problemType = 'forward' }) {
   const cx = 150
   const cy = 150
   const r = 118
@@ -20,9 +20,13 @@ export default function AnalogClock({ currentTime, baseTime, elapsedMinutes }) {
   const baseMarker = handPoint(cx, cy, baseMinuteAngle, r - 10)
 
   // 経過時間を示すアーク（分針のトラック上）
+  // forward: base → current（時計回りでelapsed分）
+  // backward: current → base（時計回りでelapsed分、つまりcurrent + elapsed = base）
+  const arcStartAngle = problemType === 'forward' ? baseMinuteAngle : currentMinuteAngle
+  const arcEndAngle = problemType === 'forward' ? currentMinuteAngle : baseMinuteAngle
   const arcR = r - 6
-  const arcStart = handPoint(cx, cy, baseMinuteAngle, arcR)
-  const arcEnd = handPoint(cx, cy, currentMinuteAngle, arcR)
+  const arcStart = handPoint(cx, cy, arcStartAngle, arcR)
+  const arcEnd = handPoint(cx, cy, arcEndAngle, arcR)
   const largeArc = elapsedMinutes > 30 ? 1 : 0
 
   let arcPath = null
@@ -164,7 +168,7 @@ export default function AnalogClock({ currentTime, baseTime, elapsedMinutes }) {
       <div className="flex justify-center gap-4 mt-1 text-xs text-gray-500">
         <span className="flex items-center gap-1">
           <span className="inline-block w-3 h-3 rounded-full bg-blue-500" />
-          はじめのじこく
+          {problemType === 'forward' ? 'はじめのじこく' : 'ついたじこく'}
         </span>
         <span className="flex items-center gap-1">
           <span className="inline-block w-5 h-2 rounded-full bg-yellow-400 opacity-80" />

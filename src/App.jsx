@@ -19,15 +19,20 @@ export default function App() {
   const [stepSize, setStepSize] = useState(5)
   const [showCelebration, setShowCelebration] = useState(false)
   const [showWrong, setShowWrong] = useState(false)
+  // 'forward' = じこく＋けいかじかん（あとのじこくをもとめる）
+  // 'backward' = じこく－けいかじかん（まえのじこくをもとめる）
+  const [problemType, setProblemType] = useState('forward')
 
-  // currentTime は baseTime + elapsedMinutes から導出
+  // currentTime は baseTime ± elapsedMinutes から導出
   const currentTime = useMemo(() => {
-    const total = baseHour * 60 + baseMinute + elapsedMinutes
+    const baseMins = baseHour * 60 + baseMinute
+    const delta = problemType === 'forward' ? elapsedMinutes : -elapsedMinutes
+    const total = (((baseMins + delta) % 1440) + 1440) % 1440
     return {
-      hour: Math.floor(total / 60) % 24,
+      hour: Math.floor(total / 60),
       minute: total % 60,
     }
-  }, [baseHour, baseMinute, elapsedMinutes])
+  }, [baseHour, baseMinute, elapsedMinutes, problemType])
 
   const baseTime = { hour: baseHour, minute: baseMinute }
 
@@ -44,9 +49,16 @@ export default function App() {
   const handleNext = () => {
     setShowCelebration(false)
     setShowWrong(false)
-    setBaseHour(pick(PROBLEM_HOURS))
-    setBaseMinute(pick(PROBLEM_MINUTES))
-    setElapsedMinutes(pick(PROBLEM_ELAPSED))
+    // backwardの場合は baseTime >= elapsedMinutes となるよう調整
+    const newElapsed = pick(PROBLEM_ELAPSED)
+    let newHour = pick(PROBLEM_HOURS)
+    const newMinute = pick(PROBLEM_MINUTES)
+    if (problemType === 'backward' && newHour * 60 + newMinute < newElapsed) {
+      newHour = Math.max(newHour, 2)
+    }
+    setBaseHour(newHour)
+    setBaseMinute(newMinute)
+    setElapsedMinutes(newElapsed)
   }
 
   const handleSliderChange = (e) => {
@@ -76,21 +88,43 @@ export default function App() {
       <div className="max-w-lg mx-auto px-4 mt-5 space-y-4">
 
         {/* ===== もんだい ===== */}
-        <div className="bg-white rounded-2xl p-4 shadow-md border-l-4 border-blue-500">
-          <p className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">もんだい</p>
-          <p className="text-xl font-black text-gray-800 leading-snug">
-            <span className="inline-block bg-blue-100 text-blue-700 rounded-xl px-2 py-0.5 mr-1">
-              {baseHour}じ {String(baseMinute).padStart(2, '0')}ふん
-            </span>
-            から
-            <span className="inline-block bg-orange-100 text-orange-600 rounded-xl px-2 py-0.5 mx-1">
-              {elapsedMinutes}ふん
-            </span>
-            たったら、
+        <div className={`bg-white rounded-2xl p-4 shadow-md border-l-4 ${problemType === 'forward' ? 'border-blue-500' : 'border-purple-500'}`}>
+          <p className="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">
+            もんだい {problemType === 'forward' ? '（じこく＋けいかじかん）' : '（じこく－けいかじかん）'}
           </p>
-          <p className="text-xl font-black text-gray-800 mt-1">
-            なんじ なんぷんですか？
-          </p>
+          {problemType === 'forward' ? (
+            <>
+              <p className="text-xl font-black text-gray-800 leading-snug">
+                <span className="inline-block bg-blue-100 text-blue-700 rounded-xl px-2 py-0.5 mr-1">
+                  {baseHour}じ {String(baseMinute).padStart(2, '0')}ふん
+                </span>
+                から
+                <span className="inline-block bg-orange-100 text-orange-600 rounded-xl px-2 py-0.5 mx-1">
+                  {elapsedMinutes}ふん
+                </span>
+                たったら、
+              </p>
+              <p className="text-xl font-black text-gray-800 mt-1">
+                なんじ なんぷんですか？
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-xl font-black text-gray-800 leading-snug">
+                <span className="inline-block bg-orange-100 text-orange-600 rounded-xl px-2 py-0.5 mr-1">
+                  {elapsedMinutes}ふん
+                </span>
+                あるいて、
+                <span className="inline-block bg-blue-100 text-blue-700 rounded-xl px-2 py-0.5 mx-1">
+                  {baseHour}じ {String(baseMinute).padStart(2, '0')}ふん
+                </span>
+                に つきました。
+              </p>
+              <p className="text-xl font-black text-gray-800 mt-1">
+                でたのは なんじ なんぷんですか？
+              </p>
+            </>
+          )}
         </div>
 
         {/* ===== アナログ時計 ===== */}
@@ -99,6 +133,7 @@ export default function App() {
             currentTime={currentTime}
             baseTime={baseTime}
             elapsedMinutes={elapsedMinutes}
+            problemType={problemType}
           />
         </div>
 
@@ -107,6 +142,7 @@ export default function App() {
           baseTime={baseTime}
           elapsedMinutes={elapsedMinutes}
           currentTime={currentTime}
+          problemType={problemType}
         />
 
         {/* ===== スライダー ===== */}
@@ -166,9 +202,38 @@ export default function App() {
           </summary>
           <div className="px-5 py-4 border-t border-gray-100 space-y-5">
 
-            {/* はじめのじこく */}
+            {/* もんだいのタイプ */}
             <div>
-              <p className="text-xs font-bold text-gray-400 mb-2">① はじめのじこく</p>
+              <p className="text-xs font-bold text-gray-400 mb-2">◎ もんだいのタイプ</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setProblemType('forward'); setShowWrong(false) }}
+                  className={`flex-1 py-2.5 rounded-xl font-black text-xs transition-all ${
+                    problemType === 'forward'
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  ➕ あとの じこく
+                </button>
+                <button
+                  onClick={() => { setProblemType('backward'); setShowWrong(false) }}
+                  className={`flex-1 py-2.5 rounded-xl font-black text-xs transition-all ${
+                    problemType === 'backward'
+                      ? 'bg-purple-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  ➖ まえの じこく
+                </button>
+              </div>
+            </div>
+
+            {/* はじめのじこく / ついたじこく */}
+            <div>
+              <p className="text-xs font-bold text-gray-400 mb-2">
+                ① {problemType === 'forward' ? 'はじめのじこく' : 'ついたじこく'}
+              </p>
               <div className="flex items-center gap-2 flex-wrap">
                 <select
                   value={baseHour}
