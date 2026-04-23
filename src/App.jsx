@@ -127,15 +127,61 @@ export default function App() {
           )}
         </div>
 
-        {/* ===== アナログ時計 ===== */}
-        <div className="flex justify-center">
-          <AnalogClock
-            currentTime={currentTime}
-            baseTime={baseTime}
-            elapsedMinutes={elapsedMinutes}
-            problemType={problemType}
-          />
-        </div>
+        {/* ===== アナログ時計（2つ並べ：はじまり → いま） ===== */}
+        {(() => {
+          // 左=早い時刻 / 右=遅い時刻
+          const earlierTime = problemType === 'forward' ? baseTime : currentTime
+          const laterTime = problemType === 'forward' ? currentTime : baseTime
+          const earlierLabel = problemType === 'forward' ? 'はじめのじこく' : 'でたじこく（こたえ）'
+          const laterLabel = problemType === 'forward' ? 'あとのじこく（こたえ）' : 'ついたじこく'
+          const earlierIsAnswer = problemType === 'backward'
+          const laterIsAnswer = problemType === 'forward'
+          return (
+            <div className="bg-white rounded-2xl p-3 shadow-md">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+                {/* 左の時計：早い時刻 */}
+                <div className="flex flex-col items-center">
+                  <div className={`text-xs font-black mb-1 px-2 py-0.5 rounded-full ${earlierIsAnswer ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-700'}`}>
+                    {earlierLabel}
+                  </div>
+                  <AnalogClock
+                    currentTime={earlierTime}
+                    baseTime={earlierTime}
+                    elapsedMinutes={0}
+                    problemType="forward"
+                    size={210}
+                    minimal={true}
+                  />
+                </div>
+
+                {/* 矢印＋けいかじかんバッジ */}
+                <div className="flex sm:flex-col items-center justify-center gap-1 py-1">
+                  <div className="bg-yellow-100 border-2 border-yellow-300 rounded-xl px-3 py-1">
+                    <span className="text-sm font-black text-orange-600 whitespace-nowrap">
+                      ＋{elapsedMinutes}ふん
+                    </span>
+                  </div>
+                  <span className="hidden sm:inline text-2xl text-orange-400 leading-none">▶</span>
+                  <span className="sm:hidden text-2xl text-orange-400 leading-none">▼</span>
+                </div>
+
+                {/* 右の時計：遅い時刻（アーク付き） */}
+                <div className="flex flex-col items-center">
+                  <div className={`text-xs font-black mb-1 px-2 py-0.5 rounded-full ${laterIsAnswer ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-700'}`}>
+                    {laterLabel}
+                  </div>
+                  <AnalogClock
+                    currentTime={laterTime}
+                    baseTime={earlierTime}
+                    elapsedMinutes={elapsedMinutes}
+                    problemType="forward"
+                    size={210}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* ===== 数直線（タイムライン） ===== */}
         <NumberLine

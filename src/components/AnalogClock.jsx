@@ -5,7 +5,14 @@ const handPoint = (cx, cy, angleDeg, length) => ({
   y: cy - length * Math.cos(toRad(angleDeg)),
 })
 
-export default function AnalogClock({ currentTime, baseTime, elapsedMinutes, problemType = 'forward' }) {
+export default function AnalogClock({
+  currentTime,
+  baseTime,
+  elapsedMinutes,
+  problemType = 'forward',
+  size = 300,
+  minimal = false,
+}) {
   const cx = 150
   const cy = 150
   const r = 118
@@ -40,8 +47,8 @@ export default function AnalogClock({ currentTime, baseTime, elapsedMinutes, pro
   return (
     <div className="relative inline-block">
       <svg
-        width="300"
-        height="300"
+        width={size}
+        height={size}
         viewBox="0 0 300 300"
         style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
       >
@@ -52,7 +59,7 @@ export default function AnalogClock({ currentTime, baseTime, elapsedMinutes, pro
         <circle cx={cx} cy={cy} r={r} fill="white" />
 
         {/* 経過時間アーク */}
-        {arcPath && (
+        {arcPath && !minimal && (
           <path
             d={arcPath}
             fill="none"
@@ -104,14 +111,16 @@ export default function AnalogClock({ currentTime, baseTime, elapsedMinutes, pro
         })}
 
         {/* 基準時刻マーカー（青い丸） */}
-        <circle
-          cx={baseMarker.x}
-          cy={baseMarker.y}
-          r={5.5}
-          fill="#3b82f6"
-          stroke="white"
-          strokeWidth="2"
-        />
+        {!minimal && (
+          <circle
+            cx={baseMarker.x}
+            cy={baseMarker.y}
+            r={5.5}
+            fill="#3b82f6"
+            stroke="white"
+            strokeWidth="2"
+          />
+        )}
 
         {/* 短針（時針） */}
         <line
@@ -164,17 +173,6 @@ export default function AnalogClock({ currentTime, baseTime, elapsedMinutes, pro
         </text>
       </svg>
 
-      {/* 凡例 */}
-      <div className="flex justify-center gap-4 mt-1 text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded-full bg-blue-500" />
-          {problemType === 'forward' ? 'はじめのじこく' : 'ついたじこく'}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-5 h-2 rounded-full bg-yellow-400 opacity-80" />
-          けいかじかん
-        </span>
-      </div>
     </div>
   )
 }
