@@ -164,31 +164,50 @@ export default function App() {
           <summary className="px-5 py-4 cursor-pointer select-none font-bold text-sm text-gray-500 hover:bg-gray-50 transition-colors">
             🔧 もんだいをかえる（せんせい・おうちのひとへ）
           </summary>
-          <div className="px-5 py-4 border-t border-gray-100 space-y-4">
-            <p className="text-xs text-gray-400">はじめのじこくをえらんでください</p>
+          <div className="px-5 py-4 border-t border-gray-100 space-y-5">
 
-            {/* 基準時刻セット */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <select
-                value={baseHour}
-                onChange={(e) => { setBaseHour(Number(e.target.value)); handleBaseChange() }}
-                className="border-2 border-blue-300 rounded-xl p-2 text-2xl font-black text-center w-20"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                  <option key={h} value={h}>{h}</option>
-                ))}
-              </select>
-              <span className="text-xl font-black">じ</span>
-              <select
-                value={baseMinute}
-                onChange={(e) => { setBaseMinute(Number(e.target.value)); handleBaseChange() }}
-                className="border-2 border-blue-300 rounded-xl p-2 text-2xl font-black text-center w-24"
-              >
-                {PROBLEM_MINUTES.map((m) => (
-                  <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
-                ))}
-              </select>
-              <span className="text-xl font-black">ふん</span>
+            {/* はじめのじこく */}
+            <div>
+              <p className="text-xs font-bold text-gray-400 mb-2">① はじめのじこく</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={baseHour}
+                  onChange={(e) => { setBaseHour(Number(e.target.value)); handleBaseChange() }}
+                  className="border-2 border-blue-300 rounded-xl p-2 text-2xl font-black text-center w-20"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+                <span className="text-xl font-black whitespace-nowrap">じ</span>
+                <select
+                  value={baseMinute}
+                  onChange={(e) => { setBaseMinute(Number(e.target.value)); handleBaseChange() }}
+                  className="border-2 border-blue-300 rounded-xl p-2 text-2xl font-black text-center w-24"
+                >
+                  {PROBLEM_MINUTES.map((m) => (
+                    <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+                  ))}
+                </select>
+                <span className="text-xl font-black whitespace-nowrap">ふん</span>
+              </div>
+            </div>
+
+            {/* 何分後 */}
+            <div>
+              <p className="text-xs font-bold text-gray-400 mb-2">② なんぷんご（けいかじかん）</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={elapsedMinutes}
+                  onChange={(e) => { setElapsedMinutes(Number(e.target.value)); setShowWrong(false) }}
+                  className="border-2 border-orange-300 rounded-xl p-2 text-2xl font-black text-center w-24"
+                >
+                  {Array.from({ length: 12 }, (_, i) => (i + 1) * 5).map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+                <span className="text-xl font-black whitespace-nowrap">ふんご</span>
+              </div>
             </div>
 
             {/* ランダムもんだいボタン */}
